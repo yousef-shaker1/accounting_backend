@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 trait CashFlowTrait
 {
-    public function getCashFlow($months, $id)
+    public function getCashFlow($months, $id)//بتجيب الدفقات النقدية الفلوس اللي داخلة و الفلوس اللي خارجة و الفرق بينهم
     {
         $currentMonth = now();
-        $startDate = now()->subMonths($months);
+        $startDate = now()->subMonths($months);//بداية الفترة علي حسب عدد الاشهر
         
         $invoices = invoice::tenant()
             ->select(DB::raw('MONTH(invoice_date) as month, YEAR(invoice_date) as year, SUM(amount) as total_incoming'))
@@ -26,14 +26,14 @@ trait CashFlowTrait
             ->where('business_id', $id)
             ->groupBy('year', 'month')
             ->get();
-    
+
         $cashflowData = [];
-    
+        
         foreach ($invoices as $invoice) {
-            $key = $invoice->year . '-' . str_pad($invoice->month, 2, '0', STR_PAD_LEFT);
+            $key = $invoice->year . '-' . str_pad($invoice->month, 2, '0', STR_PAD_LEFT);//str_pad هيا دالة بضيف 0 علي يسار الرقم لو اقل من رقمين
             $cashflowData[$key]['incoming'] = ($cashflowData[$key]['incoming'] ?? 0) + (float)$invoice->total_incoming;
         }
-    
+        
         foreach ($bills as $bill) {
             $key = $bill->year . '-' . str_pad($bill->month, 2, '0', STR_PAD_LEFT);
             $cashflowData[$key]['outgoing'] = ($cashflowData[$key]['outgoing'] ?? 0) + (float)$bill->total_outgoing;
